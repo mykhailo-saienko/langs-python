@@ -18,21 +18,21 @@ import ms.ipp.iterable.tree.path.StdPathManipulator;
 import ms.lang.types.Instance;
 import ms.lang.types.TypeName;
 
-public class PythonRef extends DelegatingTree<Instance> implements Instance {
+public class PythonRef extends DelegatingTree<Instance<Object>> implements Instance<Object> {
 
 	private final PyObject obj;
 
 	/// Python Member Ref
 	public PythonRef(PyObject obj) {
-		super(Instance.class);
+		super((Class) Instance.class);
 		this.obj = obj;
 
 		// TODO: We should not be able to delete members that are types!
 		Function<String, String> ident = Function.identity();
-		Function<String, Instance> converter = s -> new PythonRef(obj.__findattr__(s));
-		BiConsumer<String, Instance> setter = (s, r) -> obj.__setattr__(s, (PyObject) r.getValue());
-		SyntheticTree<Instance> memberEntity = new SyntheticTree<>(converter, setter, ident, ident, keys(obj),
-				Instance.class);
+		Function<String, Instance<Object>> converter = s -> new PythonRef(obj.__findattr__(s));
+		BiConsumer<String, Instance<Object>> setter = (s, r) -> obj.__setattr__(s, (PyObject) r.getValue());
+		SyntheticTree<Instance<Object>> memberEntity = new SyntheticTree<>(converter, setter, ident, ident, keys(obj),
+				(Class) Instance.class);
 		memberEntity.setDeleter(s -> {
 			boolean result = obj.__findattr__(s) != null;
 			obj.__delattr__(s);
